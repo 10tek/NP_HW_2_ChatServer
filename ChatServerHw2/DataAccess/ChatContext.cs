@@ -17,7 +17,7 @@ namespace ChatServerHw2.DataAccess
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=A-201-06;Database=ChatDb;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=DESKTOP-TALUG4B\SQLEXPRESS;Database=ChatDb;Trusted_Connection=True;");
         }
     }
 }

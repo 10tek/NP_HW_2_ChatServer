@@ -84,11 +84,12 @@ namespace ChatServerHw2
 
     class Program
     {
+        static string address = "127.0.0.1";
         static int port = 8005; // порт для приема входящих запросов
         static void Main(string[] args)
         {
             // получаем адреса для запуска сокета
-            IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+            IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(address), port);
             var messages = new List<Message>();
             // создаем сокет
             Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -117,7 +118,8 @@ namespace ChatServerHw2
                     }
                     while (handler.Available > 0);
 
-                    var messageJson = builder.ToString();
+                    var messageJson = builder.ToString().Substring(4);
+                    var portClient = int.Parse(builder.ToString().Substring(0, 4));
                     var message = JsonConvert.DeserializeObject<Message>(messageJson);
 
                     messages.Add(message);
@@ -125,10 +127,15 @@ namespace ChatServerHw2
                     Console.WriteLine($"{message.User} : {message.Text}");
 
                     var messagesJson = JsonConvert.SerializeObject(messages);
-
+                    var sendData = Encoding.Unicode.GetBytes(messagesJson);
                     // отправляем ответ
-                    data = Encoding.Unicode.GetBytes(messageJson);
-                    handler.Send(data);
+                    IPEndPoint sendIpPoint = new IPEndPoint(IPAddress.Parse(address), portClient);
+
+                    Socket sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    // подключаемся к удаленному хосту
+                    sendSocket.Connect(ipPoint);
+                    sendSocket.Send(sendData);
+
                     // закрываем сокет
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
